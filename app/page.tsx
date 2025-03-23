@@ -6,7 +6,7 @@ import axios from 'axios';
 type PunctuationResult = {
   filename: string;
   word_count: number;
-  [key: string]: number | string; // allow dynamic punctuation keys
+  [key: string]: number | string; // dynamic punctuation keys
 };
 
 export default function Page() {
@@ -29,21 +29,21 @@ export default function Page() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const baseURL = "https://punctuation-vercel-3kv793dzy-sindhisanchayas-projects.vercel.app"; // your backend
+    const baseURL = "https://punctuation-vercel-3kv793dzy-sindhisanchayas-projects.vercel.app"; // ✅ your backend URL
 
     try {
       const { data } = await axios.post<PunctuationResult>(`${baseURL}/api/analyze`, formData);
       setResult(data);
 
-      const csvResponse = await axios.get(`${baseURL}/api/download_csv`, {
+      const csvResponse = await axios.get<Blob>(`${baseURL}/api/download_csv`, {
         responseType: 'blob',
       });
-      setCsvBlob(csvResponse.data as Blob);
+      setCsvBlob(csvResponse.data);
 
-      const graphResponse = await axios.get(`${baseURL}/api/download_graph`, {
+      const graphResponse = await axios.get<Blob>(`${baseURL}/api/download_graph`, {
         responseType: 'blob',
       });
-      setGraphBlob(graphResponse.data as Blob);
+      setGraphBlob(graphResponse.data);
     } catch (err) {
       console.error(err);
       alert("Error analyzing file.");
