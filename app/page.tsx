@@ -6,7 +6,7 @@ import axios from 'axios';
 type PunctuationResult = {
   filename: string;
   word_count: number;
-  [key: string]: number | string; // dynamic punctuation keys
+  [key: string]: number | string; // dynamic keys for punctuation counts
 };
 
 export default function Page() {
@@ -29,21 +29,21 @@ export default function Page() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const baseURL = "https://punctuation-vercel-3kv793dzy-sindhisanchayas-projects.vercel.app"; // ✅ your backend URL
+    const baseURL = "https://punctuation-vercel-3kv793dzy-sindhisanchayas-projects.vercel.app"; // your deployed backend URL
 
     try {
       const { data } = await axios.post<PunctuationResult>(`${baseURL}/api/analyze`, formData);
       setResult(data);
 
-      const csvResponse = await axios.get<Blob>(`${baseURL}/api/download_csv`, {
+      const csvResponse = await axios.get(`${baseURL}/api/download_csv`, {
         responseType: 'blob',
       });
-      setCsvBlob(csvResponse.data);
+      setCsvBlob(csvResponse.data as Blob); // ✅ TypeScript fix
 
-      const graphResponse = await axios.get<Blob>(`${baseURL}/api/download_graph`, {
+      const graphResponse = await axios.get(`${baseURL}/api/download_graph`, {
         responseType: 'blob',
       });
-      setGraphBlob(graphResponse.data);
+      setGraphBlob(graphResponse.data as Blob); // ✅ TypeScript fix
     } catch (err) {
       console.error(err);
       alert("Error analyzing file.");
@@ -74,12 +74,12 @@ export default function Page() {
                 setSelectedMarks(updated);
               }}
             />
-            <label>{key.replace(/_/g, ' ')}</label>
+            <label style={{ marginLeft: 6 }}>{key.replace(/_/g, ' ')}</label>
           </li>
         ))}
       </ul>
 
-      <button onClick={handleAnalyze}>Analyze</button>
+      <button style={{ marginTop: 16 }} onClick={handleAnalyze}>Analyze</button>
 
       {result && (
         <div style={{ marginTop: 24 }}>
@@ -92,15 +92,17 @@ export default function Page() {
         <a
           href={URL.createObjectURL(csvBlob)}
           download="punctuation_summary.csv"
+          style={{ display: "block", marginTop: 16 }}
         >
           Download CSV
         </a>
       )}
-      <br />
+
       {graphBlob && (
         <a
           href={URL.createObjectURL(graphBlob)}
           download="combined_punctuation_graph.png"
+          style={{ display: "block", marginTop: 8 }}
         >
           Download Graph
         </a>
