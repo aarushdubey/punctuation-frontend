@@ -1,14 +1,34 @@
 {
+  "version": 2,
   "builds": [
     {
-      "src": "api/analyze.py",
+      "src": "punctuation_vercel.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "app/page.tsx",
+      "use": "@vercel/next"
     }
   ],
   "routes": [
     {
       "src": "/api/analyze",
-      "dest": "api/analyze.py"
+      "methods": ["POST"],
+      "dest": "punctuation_vercel.py"
+    },
+    {
+      "src": "/api/download_csv",
+      "methods": ["GET"],
+      "dest": "punctuation_vercel.py"
+    },
+    {
+      "src": "/api/download_graph",
+      "methods": ["GET"],
+      "dest": "punctuation_vercel.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/app/page.tsx"
     }
   ]
 }

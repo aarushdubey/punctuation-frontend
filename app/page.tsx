@@ -6,7 +6,7 @@ import axios from 'axios';
 type PunctuationResult = {
   filename: string;
   word_count: number;
-  [key: string]: number | string; // dynamic keys for punctuation counts
+  [key: string]: number | string;
 };
 
 export default function Page() {
@@ -25,42 +25,44 @@ export default function Page() {
 
   const handleAnalyze = async () => {
     if (!file) return alert("Please upload a file!");
+    if (selectedMarks.length === 0) return alert("Please select at least one punctuation mark!");
 
     const formData = new FormData();
     formData.append("file", file);
-
-    const baseURL = "https://punctuation-vercel-3kv793dzy-sindhisanchayas-projects.vercel.app"; // your deployed backend URL
+    formData.append("selected", JSON.stringify(selectedMarks));
 
     try {
-      const { data } = await axios.post<PunctuationResult>(`${baseURL}/api/analyze`, formData);
+      const { data } = await axios.post<PunctuationResult>("/api/analyze", formData);
       setResult(data);
 
-      const csvResponse = await axios.get(`${baseURL}/api/download_csv`, {
-        responseType: 'blob',
+      const csvRes = await axios.get("/api/download_csv", {
+        responseType: "blob",
       });
-      setCsvBlob(csvResponse.data as Blob); // ✅ TypeScript fix
+      setCsvBlob(new Blob([csvRes.data as Blob], { type: 'text/csv' }));
 
-      const graphResponse = await axios.get(`${baseURL}/api/download_graph`, {
-        responseType: 'blob',
+      const graphRes = await axios.get("/api/download_graph", {
+        responseType: "blob",
       });
-      setGraphBlob(graphResponse.data as Blob); // ✅ TypeScript fix
+      setGraphBlob(new Blob([graphRes.data as Blob], { type: 'image/png' }));
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error analyzing file:", err);
       alert("Error analyzing file.");
     }
   };
 
   return (
-    <div style={{ padding: 32, fontFamily: "sans-serif" }}>
+    <div style={{ padding: 32, fontFamily: "sans-serif", background: "#111", color: "#eee", minHeight: "100vh" }}>
       <h1>Punctuation Analyzer</h1>
 
-      <input type="file" accept=".docx" onChange={(e) => {
-        if (e.target.files?.[0]) {
-          setFile(e.target.files[0]);
-        }
-      }} />
+      <input
+        type="file"
+        accept=".docx"
+        onChange={(e) => {
+          if (e.target.files?.[0]) setFile(e.target.files[0]);
+        }}
+      />
 
-      <h3>Select punctuation marks:</h3>
+      <h3 style={{ marginTop: 20 }}>Select punctuation marks:</h3>
       <ul>
         {punctuationKeys.map((key) => (
           <li key={key}>
@@ -79,7 +81,9 @@ export default function Page() {
         ))}
       </ul>
 
-      <button style={{ marginTop: 16 }} onClick={handleAnalyze}>Analyze</button>
+      <button onClick={handleAnalyze} style={{ marginTop: 16, padding: '8px 16px' }}>
+        Analyze
+      </button>
 
       {result && (
         <div style={{ marginTop: 24 }}>
@@ -92,9 +96,9 @@ export default function Page() {
         <a
           href={URL.createObjectURL(csvBlob)}
           download="punctuation_summary.csv"
-          style={{ display: "block", marginTop: 16 }}
+          style={{ display: "block", marginTop: 24 }}
         >
-          Download CSV
+          📄 Download CSV
         </a>
       )}
 
@@ -102,9 +106,9 @@ export default function Page() {
         <a
           href={URL.createObjectURL(graphBlob)}
           download="combined_punctuation_graph.png"
-          style={{ display: "block", marginTop: 8 }}
+          style={{ display: "block", marginTop: 12 }}
         >
-          Download Graph
+          📊 Download Graph
         </a>
       )}
     </div>
