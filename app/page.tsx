@@ -38,12 +38,12 @@ export default function Page() {
       const csvResponse = await axios.get(`${baseURL}/api/download_csv`, {
         responseType: 'blob',
       });
-      setCsvBlob(csvResponse.data);
+      setCsvBlob(csvResponse.data as Blob);
 
       const graphResponse = await axios.get(`${baseURL}/api/download_graph`, {
         responseType: 'blob',
       });
-      setGraphBlob(graphResponse.data);
+      setGraphBlob(graphResponse.data as Blob);
     } catch (err) {
       console.error(err);
       alert("Error analyzing file.");
